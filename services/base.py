@@ -9,7 +9,7 @@ class BaseService:
 
     def save_without_commit(self, entity: Base):
         self.session.add(entity)
-
+        self.session.flush()
     def save_with_commit(self, entity: Base):
 
         self.session.add(entity)

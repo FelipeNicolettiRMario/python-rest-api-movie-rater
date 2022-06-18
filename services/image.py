@@ -16,15 +16,17 @@ class ImageService(BaseService):
         return image
 
     def _generate_unique_path_to_image(self, image_entity: Image) -> str:
-        return f"{os.getenv('LOCAL_IMAGE_FOLDER')}/{image_entity.id}.jpeg"
+        return f"{os.getenv('LOCAL_IMAGE_FOLDER')}{image_entity.id}.jpeg"
 
     def _save_image_entity(self,image_encoded_in_base_64: str,image_entity: Image):
+        image_entity.path = ""
         self.save_without_commit(image_entity)
-
+        self.session.refresh(image_entity)
+        
         try:
             self._save_image_locally(image_encoded_in_base_64, image_entity)
             image_entity.path = self._generate_unique_path_to_image(image_entity)
-            self.session.commit()
+            self.save_with_commit(image_entity)
 
         except Exception as error:
             self.session.rollback()
