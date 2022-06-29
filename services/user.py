@@ -6,6 +6,7 @@ from models.user import User
 from models.image import E_IMAGE_TYPE, E_MEDIA_STORAGE_TYPE, Image
 from services.base import BaseService
 from services.image import ImageService
+from sqlalchemy.exc import IntegrityError
 from utils.serializer.user import UserInput, UserInputUpdate, UserReturnPayloadSimplified
 from fastapi.responses import JSONResponse
 from utils.response import create_response
@@ -23,7 +24,7 @@ class UserService(BaseService):
             "image_type": E_IMAGE_TYPE.PROFILE.value
         } if image_encoded_in_base64 else None
 
-    def _create_user_entity(self, user_input: UserInput, image_settings: Dict[str,str] = None) -> User:
+    def _create_user_entity(self, user_input: UserInput) -> User:
 
         user = User()
         user.name = user_input.name
@@ -32,26 +33,30 @@ class UserService(BaseService):
         user.password = self._generate_password_hash(user_input.password)
         user.description = user_input.description
 
+        return user
+    
+    def _save_user(self, user_entity: Base,image_settings: Dict[str,str] = None):
+
+        self.save_with_commit(user_entity)
         if image_settings:
             image = self.image_service.create_and_save_image_entity(image_settings.get("image_encoded_in_base64"),
                                                                     image_settings.get("storage_type"),
                                                                     image_settings.get("image_type")
                                                                     )
-            user.profile_image_id = image.id
-
-        return user
-    
-    def _save_user(self, user_entity: Base):
-
-        self.save_with_commit(user_entity)
+            user_entity.profile_image_id = image.id
 
     def _generate_password_hash(self, password: str) -> str:
         return sha256(password.encode("UTF-8")).hexdigest()
 
     def save_user(self, user_input: UserInput, image_encoded_in_base64: str = None) -> JSONResponse:
 
-        user = self._create_user_entity(user_input, self._generate_image_settings(image_encoded_in_base64))
-        self._save_user(user)
+        user = self._create_user_entity(user_input)
+
+        try:
+            self._save_user(user,self._generate_image_settings(image_encoded_in_base64))
+        
+        except IntegrityError:
+            return create_response(500, {"error":"Error on try to save user"})
 
         return create_response(201, UserReturnPayloadSimplified().dump(user))
 
