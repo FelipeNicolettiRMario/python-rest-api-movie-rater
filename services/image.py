@@ -48,10 +48,11 @@ class ImageService(BaseService):
 
         return image
 
-    def update_image(self, image_encoded_in_base_64: str, image_entity: Image):
+    def update_image(self, image_encoded_in_base_64: str, image_uuid: str):
 
-        self._save_image_locally(image_encoded_in_base_64, image_entity)
+        self._save_image_locally(image_encoded_in_base_64, image_uuid)
         
+        image_entity = self.session.query(Image, image_entity)
         image_entity.path = self._generate_unique_path_to_image(image_entity)
         self.update(image_entity)
 

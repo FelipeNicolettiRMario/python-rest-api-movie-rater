@@ -1,6 +1,7 @@
 from typing import Dict
 from hashlib import sha256
 from uuid import UUID
+import uuid
 from models.base import Base
 from models.user import User
 from models.image import E_IMAGE_TYPE, E_MEDIA_STORAGE_TYPE, Image
@@ -63,27 +64,35 @@ class UserService(BaseService):
     def _update_user_entity(self, user_input: UserInputUpdate, user: User) -> User:
 
         for key, value in user_input.dict().items():
-
             if value and user.__getattribute__(key):
                 user.__setattr__(key,value)
 
         return user
 
-    def update_user(self, uuid: UUID, user_input: UserInputUpdate):
+    def update_user(self, passed_uuid: UUID, user_input: UserInputUpdate):
 
-        user_from_uuid = self.session.get(User,uuid)
-        self._update_user_entity(user_input, user_from_uuid)
-        return create_response()
+        user_from_uuid = self.session.get(User,uuid.UUID(passed_uuid))
+        updated_user = self._update_user_entity(user_input, user_from_uuid)
+        self.update(updated_user)
+        return create_response(200, {"message":"User updated with success"})
 
-    def update_profile_picture(self, uuid: UUID, image_encoded_in_base64: str = None):
+    def update_profile_picture(self, passed_uuid: UUID, image_encoded_in_base64: str = None):
         
-        user_from_uuid = self.session.get(User, uuid)
-        
-        self.image_service.update_image(image_encoded_in_base64, user_from_uuid.profile_image)
+        user_from_uuid = self.session.get(User, uuid.UUID(passed_uuid))
+        self.image_service.update_image(image_encoded_in_base64, user_from_uuid.profile_image_id)
 
-        return create_response()
-
+        return create_response(200, {"message":"Profile picture updated with success"})
     
+    def delete_user(self, passed_uuid: str):
+
+        try:
+            user_from_uuid = self.session.get(User, uuid.UUID(passed_uuid))
+            self.delete(user_from_uuid)
+            return create_response(200, {"message":"User deleted with success"})
+
+        except IntegrityError:
+            return create_response(500, {"error":"Error on try to delete user"})
+
     def get_all_users(self,max_items: int):
 
         users = self.session.query(User).limit(max_items).all()
