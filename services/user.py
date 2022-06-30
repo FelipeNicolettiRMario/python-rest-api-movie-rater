@@ -84,3 +84,7 @@ class UserService(BaseService):
         return create_response()
 
     
+    def get_all_users(self,max_items: int):
+
+        users = self.session.query(User).limit(max_items).all()
+        return [UserReturnPayloadSimplified().dump(user) for user in users]
