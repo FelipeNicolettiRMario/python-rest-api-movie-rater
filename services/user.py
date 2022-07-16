@@ -38,13 +38,13 @@ class UserService(BaseService):
     
     def _save_user(self, user_entity: Base,image_settings: Dict[str,str] = None):
 
-        self.save_with_commit(user_entity)
         if image_settings:
             image = self.image_service.create_and_save_image_entity(image_settings.get("image_encoded_in_base64"),
                                                                     image_settings.get("storage_type"),
                                                                     image_settings.get("image_type")
                                                                     )
             user_entity.profile_image_id = image.id
+        self.save_with_commit(user_entity)
 
     def _generate_password_hash(self, password: str) -> str:
         return sha256(password.encode("UTF-8")).hexdigest()
@@ -79,7 +79,7 @@ class UserService(BaseService):
     def update_profile_picture(self, passed_uuid: UUID, image_encoded_in_base64: str = None):
         
         user_from_uuid = self.session.get(User, uuid.UUID(passed_uuid))
-        self.image_service.update_image(image_encoded_in_base64, user_from_uuid.profile_image_id)
+        self.image_service.update_image(image_encoded_in_base64, user_from_uuid.profile_image)
 
         return create_response(200, {"message":"Profile picture updated with success"})
     
