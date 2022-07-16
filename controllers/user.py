@@ -9,7 +9,7 @@ from utils.serializer.user import UserInput, UserInputUpdate
 user = APIRouter()
 
 @user.post("/user")
-async def create_user(params = Form(...), image: UploadFile = File(...)):
+async def create_user(image: UploadFile,params = Form(...)):
 
     user_service = UserService()
     user = UserInput(**json.loads(params))
@@ -35,7 +35,7 @@ async def update_user(uuid: str, new_information: UserInputUpdate):
     return user_service.update_user(uuid,new_information)
 
 @user.put("/user/image/{uuid}")
-async def update_user(uuid: str, image: UploadFile = File(...)):
+async def update_user_image(image: UploadFile,uuid:str):
     user_service = UserService()
     image_content = await image.read()
-    return user_service.update_profile_picture(uuid,image_content)
+    return user_service.update_profile_picture(uuid,b64encode(image_content).decode("UTF-8"))
