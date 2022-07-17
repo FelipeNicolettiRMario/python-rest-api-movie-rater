@@ -2,6 +2,9 @@ from typing import Dict
 from hashlib import sha256
 from uuid import UUID
 import uuid
+
+from psycopg2.errors import UniqueViolation
+from sqlalchemy.exc import PendingRollbackError
 from models.base import Base
 from models.user import User
 from models.image import E_IMAGE_TYPE, E_MEDIA_STORAGE_TYPE, Image
@@ -14,9 +17,9 @@ from utils.response import create_response
 
 class UserService(BaseService):
 
-    def __init__(self) -> None:
-        super().__init__()
-        self.image_service = ImageService()
+    def __init__(self, session) -> None:
+        super().__init__(session)
+        self.image_service = ImageService(session)
 
     def _generate_image_settings(self,image_encoded_in_base64: str) -> Dict[str,str]:
         return {
@@ -44,7 +47,9 @@ class UserService(BaseService):
                                                                     image_settings.get("image_type")
                                                                     )
             user_entity.profile_image_id = image.id
+
         self.save_with_commit(user_entity)
+    
 
     def _generate_password_hash(self, password: str) -> str:
         return sha256(password.encode("UTF-8")).hexdigest()
@@ -56,8 +61,17 @@ class UserService(BaseService):
         try:
             self._save_user(user,self._generate_image_settings(image_encoded_in_base64))
         
-        except IntegrityError:
-            return create_response(500, {"error":"Error on try to save user"})
+        except (IntegrityError,UniqueViolation,PendingRollbackError) as error:
+            
+            if user.profile_image_id:
+                self.image_service.delete_image_from_image_uuid(user.profile_image_id)
+
+            if isinstance(error,IntegrityError):
+                detail = "Email could not be duplicated"
+            else:
+                detail = "Internal Error"
+
+            return create_response(500, {"error":"Error on try to save user","detail":detail})
 
         return create_response(201, UserReturnPayloadSimplified().dump(user))
 

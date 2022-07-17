@@ -1,20 +1,23 @@
 from typing import List
-from utils.session_manager import SessionManager
 from models.base import Base
 
 class BaseService:
 
-    def __init__(self) -> None:
-        self.session = SessionManager().get_session()
+    def __init__(self, session) -> None:
+        self.session = session
 
     def save_without_commit(self, entity: Base):
         self.session.add(entity)
         self.session.flush()
     def save_with_commit(self, entity: Base):
 
-        self.session.add(entity)
-        self.session.commit()
-
+        try:
+            self.session.add(entity)
+            self.session.commit()
+        except Exception as error:
+            self.session.rollback()
+            raise error
+            
     def delete(self, entity: Base):
 
         self.session.delete(entity)

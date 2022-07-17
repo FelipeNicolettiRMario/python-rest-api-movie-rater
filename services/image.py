@@ -1,3 +1,4 @@
+import uuid
 from models.image import Image
 import base64
 import os
@@ -5,8 +6,8 @@ from services.base import BaseService
 
 class ImageService(BaseService):
 
-    def __init__(self) -> None:
-        super().__init__()
+    def __init__(self, session) -> None:
+        super().__init__(session)
 
     def _create_image_entity(self, storage_type: str, image_type: str) -> Image:
         image = Image()
@@ -65,5 +66,13 @@ class ImageService(BaseService):
 
         except Exception as error:
             raise error
+
+    def delete_image_from_image_uuid(self, uuid: uuid.UUID):
+
+        image_to_delete = self.session.get(Image, uuid)
+
+        if image_to_delete:
+
+            self.delete_image(image_to_delete)
 
         
