@@ -7,7 +7,6 @@ from psycopg2.errors import UniqueViolation
 from sqlalchemy.exc import PendingRollbackError
 from models.base import Base
 from models.user import User
-from models.image import E_IMAGE_TYPE, E_MEDIA_STORAGE_TYPE, Image
 from services.base import BaseService
 from services.image import ImageService
 from sqlalchemy.exc import IntegrityError
@@ -20,13 +19,6 @@ class UserService(BaseService):
     def __init__(self, session) -> None:
         super().__init__(session)
         self.image_service = ImageService(session)
-
-    def _generate_image_settings(self,image_encoded_in_base64: str) -> Dict[str,str]:
-        return {
-            "image_encoded_in_base64":image_encoded_in_base64,
-            "storage_type": E_MEDIA_STORAGE_TYPE.LOCAL.value,
-            "image_type": E_IMAGE_TYPE.PROFILE.value
-        } if image_encoded_in_base64 else None
 
     def _create_user_entity(self, user_input: UserInput) -> User:
 
