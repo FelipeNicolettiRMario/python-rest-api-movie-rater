@@ -1,5 +1,5 @@
 from services.user import UserService
-from fastapi import APIRouter, Depends, File, UploadFile, Form
+from fastapi import APIRouter, Depends, UploadFile, Form
 import json
 from base64 import b64encode
 
