@@ -1,5 +1,6 @@
+from typing import Dict
 import uuid
-from models.image import E_IMAGE_TYPE, E_MEDIA_STORAGE_TYPE, Image
+from models.image import Image
 import base64
 import os
 from services.base import BaseService
@@ -9,11 +10,15 @@ class ImageService(BaseService):
     def __init__(self, session) -> None:
         super().__init__(session)
 
-    def _generate_image_settings(self,image_encoded_in_base64: str) -> Dict[str,str]:
+    def _generate_image_settings(self,
+                            image_encoded_in_base64: str,
+                            storage_type,
+                            image_type) -> Dict[str,str]:
+
         return {
             "image_encoded_in_base64":image_encoded_in_base64,
-            "storage_type": E_MEDIA_STORAGE_TYPE.LOCAL.value,
-            "image_type": E_IMAGE_TYPE.PROFILE.value
+            "storage_type": storage_type.value,
+            "image_type": image_type.value
         } if image_encoded_in_base64 else None
 
 

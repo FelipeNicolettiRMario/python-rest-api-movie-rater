@@ -6,6 +6,7 @@ import uuid
 from psycopg2.errors import UniqueViolation
 from sqlalchemy.exc import PendingRollbackError
 from models.base import Base
+from models.image import E_IMAGE_TYPE, E_MEDIA_STORAGE_TYPE
 from models.user import User
 from services.base import BaseService
 from services.image import ImageService
@@ -51,7 +52,9 @@ class UserService(BaseService):
         user = self._create_user_entity(user_input)
 
         try:
-            self._save_user(user,self._generate_image_settings(image_encoded_in_base64))
+            self._save_user(user,self.image_service._generate_image_settings(image_encoded_in_base64,
+                                                                             E_MEDIA_STORAGE_TYPE.LOCAL,
+                                                                             E_IMAGE_TYPE.PROFILE))
         
         except (IntegrityError,UniqueViolation,PendingRollbackError) as error:
             
@@ -67,19 +70,9 @@ class UserService(BaseService):
 
         return create_response(201, UserReturnPayloadSimplified().dump(user))
 
-    def _update_user_entity(self, user_input: UserInputUpdate, user: User) -> User:
-
-        for key, value in user_input.dict().items():
-            if value and user.__getattribute__(key):
-                user.__setattr__(key,value)
-
-        return user
-
     def update_user(self, passed_uuid: UUID, user_input: UserInputUpdate):
 
-        user_from_uuid = self.session.get(User,uuid.UUID(passed_uuid))
-        updated_user = self._update_user_entity(user_input, user_from_uuid)
-        self.update(updated_user)
+        self.update_entity_by_id(User, passed_uuid,user_input)
         return create_response(200, {"message":"User updated with success"})
 
     def update_profile_picture(self, passed_uuid: UUID, image_encoded_in_base64: str = None):
@@ -92,14 +85,11 @@ class UserService(BaseService):
     def delete_user(self, passed_uuid: str):
 
         try:
-            user_from_uuid = self.session.get(User, uuid.UUID(passed_uuid))
-            self.delete(user_from_uuid)
+            self.delete_entity_from_uuid(User,passed_uuid)
             return create_response(200, {"message":"User deleted with success"})
 
         except IntegrityError:
             return create_response(500, {"error":"Error on try to delete user"})
 
     def get_all_users(self,max_items: int):
-
-        users = self.session.query(User).limit(max_items).all()
-        return [UserReturnPayloadSimplified().dump(user) for user in users]
+        return self.get_all_from_entity(max_items, User, UserReturnPayloadSimplified)
