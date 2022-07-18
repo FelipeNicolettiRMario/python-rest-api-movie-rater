@@ -1,3 +1,4 @@
+import uuid
 from sqlalchemy import Column, ForeignKey, String
 from sqlalchemy.orm import relationship
 from sqlalchemy.dialects.postgresql import UUID
@@ -8,7 +9,7 @@ class Participant(Base):
 
     __tablename__ = "PAR_PARTICIPANT"
 
-    id = Column("PAR_ID",UUID(as_uuid=True),primary_key=True,nullable=False)
+    id = Column("PAR_ID",UUID(as_uuid=True),default=uuid.uuid4,primary_key=True,nullable=False)
     name = Column("PAR_NAME", String(100),unique=True,nullable=False)
     origin_country = Column("PAR_ORIGIN_COUNTRY", String(100),nullable=False)
     description = Column("PAR_DESCRIPTION", String(100),nullable=True)
