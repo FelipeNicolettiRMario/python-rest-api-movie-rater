@@ -20,15 +20,6 @@ class ParticipantService(BaseService):
         super().__init__(session)
         self.image_service = ImageService(session)
 
-    def _create_participant_entity(self,participant_input: ParticipantInput):
-
-        participant = Participant()
-        participant.name = participant_input.name
-        participant.origin_country = participant_input.origin_country
-        participant.description = participant_input.description
-
-        return participant
-
     def _save_participant(self,participant_entity: Participant,image_settings: Dict[str,str] = None):
         if image_settings:
             image = self.image_service.create_and_save_image_entity(image_settings.get("image_encoded_in_base64"),
@@ -40,7 +31,7 @@ class ParticipantService(BaseService):
         self.save_with_commit(participant_entity)
 
     def save_participant(self, participant_input: ParticipantInput, image_encoded_in_base64: str = None) -> JSONResponse:
-        participant = self._create_participant_entity(participant_input)
+        participant = self._create_entity(Participant,participant_input.dict())
 
         try:
             self._save_participant(participant,self.image_service._generate_image_settings(image_encoded_in_base64,

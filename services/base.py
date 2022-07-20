@@ -1,5 +1,6 @@
-from typing import List
+from typing import Any, Dict, List
 import uuid
+
 from models.base import Base
 
 class BaseService:
@@ -38,6 +39,16 @@ class BaseService:
 
         self.session.add_all(entitys)
         self.session.commit()
+
+    def _create_entity(self, entity: Base, dict_of_attributes: Dict[str,Any]):
+
+        entity_initiated = entity()
+        for key, value in dict_of_attributes.items():
+
+            if hasattr(entity_initiated,key):
+                entity_initiated.__setattr__(key,value)
+
+        return entity_initiated
 
     def _update_entity(self, values_input, entity):
 

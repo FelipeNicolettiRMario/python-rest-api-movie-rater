@@ -20,17 +20,6 @@ class UserService(BaseService):
     def __init__(self, session) -> None:
         super().__init__(session)
         self.image_service = ImageService(session)
-
-    def _create_user_entity(self, user_input: UserInput) -> User:
-
-        user = User()
-        user.name = user_input.name
-        user.email = user_input.email
-        user.birthday = user_input.birthday
-        user.password = self._generate_password_hash(user_input.password)
-        user.description = user_input.description
-
-        return user
     
     def _save_user(self, user_entity: Base,image_settings: Dict[str,str] = None):
 
@@ -49,7 +38,7 @@ class UserService(BaseService):
 
     def save_user(self, user_input: UserInput, image_encoded_in_base64: str = None) -> JSONResponse:
 
-        user = self._create_user_entity(user_input)
+        user = self._create_entity(User,user_input.dict())
 
         try:
             self._save_user(user,self.image_service._generate_image_settings(image_encoded_in_base64,
@@ -65,6 +54,7 @@ class UserService(BaseService):
                 detail = "Email could not be duplicated"
             else:
                 detail = "Internal Error"
+            print(error)
 
             return create_response(500, {"error":"Error on try to save user","detail":detail})
 
