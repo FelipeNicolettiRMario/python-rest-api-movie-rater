@@ -1,12 +1,13 @@
 from typing import Any, Dict, List
 import uuid
+from sqlalchemy.orm import Session
 
 from models.base import Base
 
 class BaseService:
 
     def __init__(self, session) -> None:
-        self.session = session
+        self.session:Session = session
 
     def save_without_commit(self, entity: Base):
         self.session.add(entity)
@@ -53,14 +54,17 @@ class BaseService:
     def _update_entity(self, values_input, entity):
 
         for key, value in values_input.dict().items():
-            if value and entity.__getattribute__(key):
+            if value and hasattr(entity,key):
                 entity.__setattr__(key,value)
 
         return entity
 
-    def update_entity_by_id(self,entity,passed_uuid, values_input):
+    def update_entity_by_id(self,entity,passed_id, values_input):
+        
+        if isinstance(passed_id, str):
+            passed_id = uuid.UUID(passed_id)
 
-        entity_from_uuid = self.session.get(entity, uuid.UUID(passed_uuid))
+        entity_from_uuid = self.session.get(entity,passed_id)
         updated_entity = self._update_entity(values_input,entity_from_uuid)
         self.update(updated_entity)
 
