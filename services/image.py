@@ -1,14 +1,19 @@
 from typing import Dict
 import uuid
-from models.image import Image
 import base64
 import os
-from services.base import BaseService
 
+from zope.interface import implementer
+
+from models.image import Image
+from services.new_base import BaseService, IBase
+from repositorys.image import ImageRepository
+
+@implementer(IBase)
 class ImageService(BaseService):
 
-    def __init__(self, session) -> None:
-        super().__init__(session)
+    def __init__(self, repository) -> None:
+        super().__init__(repository)
 
     def _generate_image_settings(self,
                             image_encoded_in_base64: str,
@@ -29,60 +34,34 @@ class ImageService(BaseService):
 
         return image
 
-    def _generate_unique_path_to_image(self, image_entity: Image) -> str:
-        return f"{os.getenv('LOCAL_IMAGE_FOLDER')}{image_entity.id}.jpeg"
-
-    def _save_image_entity(self,image_encoded_in_base_64: str,image_entity: Image):
-        image_entity.path = ""
-        self.save_without_commit(image_entity)
-        self.session.refresh(image_entity)
-        
-        try:
-            self._save_image_locally(image_encoded_in_base_64, image_entity)
-            image_entity.path = self._generate_unique_path_to_image(image_entity)
-            self.save_with_commit(image_entity)
-
-        except Exception as error:
-            self.session.rollback()
-            raise error
-
-    def _save_image_locally(self,image_encoded_in_base_64: str, image_entity: Image):
-
-        image_decoded_from_base64 = base64.b64decode(image_encoded_in_base_64)
-
-        path_to_file = self._generate_unique_path_to_image(image_entity)
-
-        with open(path_to_file,'wb') as file:
-            file.write(image_decoded_from_base64)
-
     def create_and_save_image_entity(self,image_encoded_in_base_64: str, storage_type: str, image_type: str) -> Image:
 
         image = self._create_image_entity(storage_type, image_type)
-        self._save_image_entity(image_encoded_in_base_64, image)
+        self.repository.save_image_entity(image_encoded_in_base_64, image)
 
         return image
 
     def update_image(self, image_encoded_in_base_64: str, image: Image):
 
-        self._save_image_locally(image_encoded_in_base_64, image)
+        self.repository._save_image_locally(image_encoded_in_base_64, image)
         
-        image.path = self._generate_unique_path_to_image(image)
-        self.update(image)
+        image.path = self.repository._generate_unique_path_to_image(image)
+        self.repository.update(image)
 
     def delete_image(self, image_entity: Image):
 
-        path_of_image = self._generate_unique_path_to_image(image_entity)
+        path_of_image = self.repository._generate_unique_path_to_image(image_entity)
 
         try:
             os.remove(path_of_image)
-            self.delete(image_entity)
+            self.repository.delete(image_entity)
 
         except Exception as error:
             raise error
 
     def delete_image_from_image_uuid(self, uuid: uuid.UUID):
 
-        image_to_delete = self.session.get(Image, uuid)
+        image_to_delete = self.repository.get_entity_by_id(Image, uuid)
 
         if image_to_delete:
 

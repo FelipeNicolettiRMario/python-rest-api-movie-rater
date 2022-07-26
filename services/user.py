@@ -2,24 +2,30 @@ from typing import Dict
 from hashlib import sha256
 from uuid import UUID
 import uuid
-
 from psycopg2.errors import UniqueViolation
 from sqlalchemy.exc import PendingRollbackError
+from sqlalchemy.exc import IntegrityError
+from fastapi.responses import JSONResponse
+from zope.interface import implementer
+
 from models.base import Base
 from models.image import E_IMAGE_TYPE, E_MEDIA_STORAGE_TYPE
 from models.user import User
-from services.base import BaseService
+
 from services.image import ImageService
-from sqlalchemy.exc import IntegrityError
+from services.new_base import BaseService, IBase
+
 from utils.serializer.user import UserInput, UserInputUpdate, UserReturnPayloadSimplified
-from fastapi.responses import JSONResponse
 from utils.response import create_response
 
+from repositorys.image import ImageRepository
+
+@implementer(IBase)
 class UserService(BaseService):
 
-    def __init__(self, session) -> None:
-        super().__init__(session)
-        self.image_service = ImageService(session)
+    def __init__(self, repository) -> None:
+        super().__init__(repository)
+        self.image_service = ImageService(self.repository.create_repository_with_same_session(ImageRepository))
     
     def _save_user(self, user_entity: Base,image_settings: Dict[str,str] = None):
 
@@ -30,7 +36,7 @@ class UserService(BaseService):
                                                                     )
             user_entity.profile_image_id = image.id
 
-        self.save_with_commit(user_entity)
+        self.repository.save_with_commit(user_entity)
     
 
     def _generate_password_hash(self, password: str) -> str:
@@ -38,7 +44,7 @@ class UserService(BaseService):
 
     def save_user(self, user_input: UserInput, image_encoded_in_base64: str = None) -> JSONResponse:
 
-        user = self._create_entity(User,user_input.dict())
+        user = self.repository.create_entity(User,user_input.dict())
 
         try:
             self._save_user(user,self.image_service._generate_image_settings(image_encoded_in_base64,
@@ -62,12 +68,12 @@ class UserService(BaseService):
 
     def update_user(self, passed_uuid: UUID, user_input: UserInputUpdate):
 
-        self.update_entity_by_id(User, passed_uuid,user_input)
+        self.repository.update_entity_by_id(User, passed_uuid,user_input)
         return create_response(200, {"message":"User updated with success"})
 
     def update_profile_picture(self, passed_uuid: UUID, image_encoded_in_base64: str = None):
         
-        user_from_uuid = self.session.get(User, uuid.UUID(passed_uuid))
+        user_from_uuid = self.repository.get_entity_by_id(User, uuid.UUID(passed_uuid))
         self.image_service.update_image(image_encoded_in_base64, user_from_uuid.profile_image)
 
         return create_response(200, {"message":"Profile picture updated with success"})
@@ -75,11 +81,11 @@ class UserService(BaseService):
     def delete_user(self, passed_uuid: str):
 
         try:
-            self.delete_entity_from_uuid(User,passed_uuid)
+            self.repository.delete_entity_from_uuid(User,passed_uuid)
             return create_response(200, {"message":"User deleted with success"})
 
         except IntegrityError:
             return create_response(500, {"error":"Error on try to delete user"})
 
     def get_all_users(self,max_items: int):
-        return self.get_all_from_entity(max_items, User, UserReturnPayloadSimplified)
+        return self.repository.get_all_from_entity(max_items, User, UserReturnPayloadSimplified)

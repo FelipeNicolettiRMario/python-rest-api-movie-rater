@@ -3,22 +3,27 @@
 from typing import Dict
 from uuid import UUID
 import uuid
-
+from fastapi.responses import JSONResponse
 from psycopg2 import IntegrityError
+from zope.interface import implementer
+
 from models.image import E_IMAGE_TYPE, E_MEDIA_STORAGE_TYPE
 from models.participant import Participant
-from services.base import BaseService
+
+from services.new_base import IBase,BaseService
 from services.image import ImageService
+
 from utils.response import create_response
 from utils.serializer.participant import ParticipantInput, ParticipantInputUpdate, ParticipantReturnPayloadSimplified
-from fastapi.responses import JSONResponse
 
+from repositorys.image import ImageRepository
 
+@implementer(IBase)
 class ParticipantService(BaseService):
 
-    def __init__(self, session) -> None:
-        super().__init__(session)
-        self.image_service = ImageService(session)
+    def __init__(self, repository) -> None:
+        super().__init__(repository)
+        self.image_service = ImageService(self.repository.create_repository_with_same_session(ImageRepository))
 
     def _save_participant(self,participant_entity: Participant,image_settings: Dict[str,str] = None):
         if image_settings:
@@ -28,10 +33,10 @@ class ParticipantService(BaseService):
                                                                     )
             participant_entity.participant_image_id = image.id
 
-        self.save_with_commit(participant_entity)
+        self.repository.save_with_commit(participant_entity)
 
     def save_participant(self, participant_input: ParticipantInput, image_encoded_in_base64: str = None) -> JSONResponse:
-        participant = self._create_entity(Participant,participant_input.dict())
+        participant = self.repository.create_entity(Participant,participant_input.dict())
 
         try:
             self._save_participant(participant,self.image_service._generate_image_settings(image_encoded_in_base64,
@@ -54,12 +59,12 @@ class ParticipantService(BaseService):
     
     def update_participant(self, passed_uuid: UUID, participant_input: ParticipantInputUpdate):
 
-        self.update_entity_by_id(Participant, passed_uuid,participant_input)
+        self.repository.update_entity_by_id(Participant, passed_uuid,participant_input)
         return create_response(200, {"message":"Participant updated with success"})
 
     def update_participant_picture(self, passed_uuid: UUID, image_encoded_in_base64: str = None):
         
-        participant_from_uuid = self.session.get(Participant, uuid.UUID(passed_uuid))
+        participant_from_uuid = self.repository.get_entity_by_id(Participant, uuid.UUID(passed_uuid))
         self.image_service.update_image(image_encoded_in_base64, participant_from_uuid.participant_image)
 
         return create_response(200, {"message":"Participant picture updated with success"})
@@ -67,11 +72,11 @@ class ParticipantService(BaseService):
     def delete_participant(self, passed_uuid: str):
 
         try:
-            self.delete_entity_from_uuid(Participant,passed_uuid)
+            self.repository.delete_entity_from_uuid(Participant,passed_uuid)
             return create_response(200, {"message":"Participant deleted with success"})
 
         except:
             return create_response(500, {"error":"Error on try to delete participant"})
             
     def get_all_participants(self,max_items: int):
-        return self.get_all_from_entity(max_items, Participant,ParticipantReturnPayloadSimplified)
+        return self.repository.get_all_from_entity(max_items, Participant,ParticipantReturnPayloadSimplified)

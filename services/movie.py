@@ -3,23 +3,26 @@ from uuid import UUID
 import uuid
 from fastapi.responses import JSONResponse
 from psycopg2 import IntegrityError
+from zope.interface import implementer
 
 from models.base import Base
 from models.image import E_IMAGE_TYPE, E_MEDIA_STORAGE_TYPE
 from models.movie import Movie
 
-from services.base import BaseService
+from services.new_base import IBase,BaseService
 from services.image import ImageService
 from utils.response import create_response
 
 from utils.serializer.movie import MovieInput, MovieInputUpdate, MovieReturnPayloadSimplified
 
+from repositorys.image import ImageRepository
 
+@implementer(IBase)
 class MovieService(BaseService):
 
-    def __init__(self, session) -> None:
-        super().__init__(session)
-        self.image_service = ImageService(session)
+    def __init__(self, repository) -> None:
+        super().__init__(repository)
+        self.image_service = ImageService(self.repository.create_repository_with_same_session(ImageRepository))
 
     def _save_movie(self, movie_entity: Base,image_settings: Dict[str,str] = None):
 
@@ -30,11 +33,11 @@ class MovieService(BaseService):
                                                                     )
             movie_entity.poster_id = image.id
 
-        self.save_with_commit(movie_entity)
+        self.repository.save_with_commit(movie_entity)
 
     def save_movie(self, movie_input: MovieInput, image_encoded_in_base64: str = None) -> JSONResponse:
 
-        movie = self._create_entity(Movie,movie_input.dict())
+        movie = self.repository.create_entity(Movie,movie_input.dict())
 
         try:
             self._save_movie(movie,self.image_service._generate_image_settings(image_encoded_in_base64,
@@ -58,12 +61,12 @@ class MovieService(BaseService):
 
     def update_movie(self, passed_uuid: UUID, movie_input: MovieInputUpdate):
 
-        self.update_entity_by_id(Movie, passed_uuid,movie_input)
+        self.repository.update_entity_by_id(Movie, passed_uuid,movie_input)
         return create_response(200, {"message":"Movie updated with success"})
 
     def update_profile_picture(self, passed_uuid: UUID, image_encoded_in_base64: str = None):
         
-        movie_from_uuid = self.session.get(Movie, uuid.UUID(passed_uuid))
+        movie_from_uuid = self.repository.get_entity_by_id(Movie, uuid.UUID(passed_uuid))
         self.image_service.update_image(image_encoded_in_base64, movie_from_uuid.poster)
 
         return create_response(200, {"message":"Profile picture updated with success"})
@@ -71,11 +74,11 @@ class MovieService(BaseService):
     def delete_movie(self, passed_uuid: str):
 
         try:
-            self.delete_entity_from_uuid(Movie,passed_uuid)
+            self.repository.delete_entity_from_uuid(Movie,passed_uuid)
             return create_response(200, {"message":"Movie deleted with success"})
 
         except IntegrityError:
             return create_response(500, {"error":"Error on try to delete movie"})
 
     def get_all_movies(self,max_items: int):
-        return self.get_all_from_entity(max_items, Movie, MovieReturnPayloadSimplified)
+        return self.repository.get_all_from_entity(max_items, Movie, MovieReturnPayloadSimplified)
