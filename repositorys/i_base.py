@@ -27,10 +27,10 @@ class IBase(Interface):
     def save_batch_with_commit(self, entitys: List[Base]):
         pass
  
-    def _create_entity(self, entity: Base, dict_of_attributes: Dict[str,Any]):
+    def create_entity(self, entity: Base, dict_of_attributes: Dict[str,Any]):
         pass
     
-    def _update_entity(self, values_input, entity):
+    def update_entity(self, values_input, entity):
         pass
 
     def update_entity_by_id(self,entity,passed_id, values_input):

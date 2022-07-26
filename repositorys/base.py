@@ -68,7 +68,7 @@ class BaseRepository:
             passed_id = uuid.UUID(passed_id)
 
         entity_from_uuid = self._session.get(entity,passed_id)
-        updated_entity = self._update_entity(values_input,entity_from_uuid)
+        updated_entity = self.update_entity(values_input,entity_from_uuid)
         self.update(updated_entity)
 
     def delete_entity_from_uuid(self, entity, passed_uuid):
