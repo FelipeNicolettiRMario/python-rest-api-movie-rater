@@ -1,9 +1,5 @@
-from zope.interface import Interface, Attribute
-
 import repositorys.i_base
 
-class IBase(Interface):
-    repository = Attribute("Repository to access the database")
 
 class BaseService:
 

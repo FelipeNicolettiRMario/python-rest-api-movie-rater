@@ -10,14 +10,15 @@ from zope.interface import implementer
 from models.image import E_IMAGE_TYPE, E_MEDIA_STORAGE_TYPE
 from models.participant import Participant
 
-from services.base import IBase,BaseService
-from services.image import ImageService
+from services.base import BaseService
+from services.interfaces.i_base import IBase
+from services.interfaces.i_participant import IParticipantService
 
 from utils.response import create_response
 from utils.serializer.participant import ParticipantInput, ParticipantInputUpdate, ParticipantReturnPayloadSimplified
 
-from repositorys.image import ImageRepository
 
+@implementer(IParticipantService)
 @implementer(IBase)
 class ParticipantService(BaseService):
 

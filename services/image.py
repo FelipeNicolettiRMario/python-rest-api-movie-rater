@@ -1,14 +1,15 @@
 from typing import Dict
 import uuid
-import base64
 import os
 
 from zope.interface import implementer
 
 from models.image import Image
-from services.base import BaseService, IBase
-from repositorys.image import ImageRepository
+from services.base import BaseService
+from services.interfaces.i_base import IBase
+from services.interfaces.i_image import IImageService
 
+@implementer(IImageService)
 @implementer(IBase)
 class ImageService(BaseService):
 

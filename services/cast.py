@@ -1,4 +1,4 @@
-from typing import Dict, List
+from typing import List
 from fastapi.responses import JSONResponse
 import uuid
 from zope.interface import implementer
@@ -7,14 +7,17 @@ from models.cast import Cast
 from models.movie import Movie
 from models.participant import Participant
 
-from services.base import IBase, BaseService
+from services.base import BaseService
+from services.interfaces.i_base import IBase
+from services.interfaces.i_cast import ICastService
 
 from utils.response import create_response
 
-from utils.serializer.cast import CastInput, CastInputUpdate, CastReturnPayloadSimplified
+from utils.serializer.cast import CastInput, CastInputUpdate
 
 
-implementer(IBase)
+@implementer(IBase)
+@implementer(ICastService)
 class CastService(BaseService):
 
     def __init__(self, repository) -> None:
