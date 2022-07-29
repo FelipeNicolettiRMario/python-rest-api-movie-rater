@@ -13,7 +13,7 @@ from models.image import E_IMAGE_TYPE, E_MEDIA_STORAGE_TYPE
 from models.user import User
 
 from services.image import ImageService
-from services.new_base import BaseService, IBase
+from services.base import BaseService, IBase
 
 from utils.serializer.user import UserInput, UserInputUpdate, UserReturnPayloadSimplified
 from utils.response import create_response

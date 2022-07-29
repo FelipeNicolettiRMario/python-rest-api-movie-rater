@@ -6,7 +6,7 @@ import os
 from zope.interface import implementer
 
 from models.image import Image
-from services.new_base import BaseService, IBase
+from services.base import BaseService, IBase
 from repositorys.image import ImageRepository
 
 @implementer(IBase)

@@ -7,7 +7,7 @@ from models.cast import Cast
 from models.movie import Movie
 from models.participant import Participant
 
-from services.new_base import IBase, BaseService
+from services.base import IBase, BaseService
 
 from utils.response import create_response
 

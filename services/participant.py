@@ -10,7 +10,7 @@ from zope.interface import implementer
 from models.image import E_IMAGE_TYPE, E_MEDIA_STORAGE_TYPE
 from models.participant import Participant
 
-from services.new_base import IBase,BaseService
+from services.base import IBase,BaseService
 from services.image import ImageService
 
 from utils.response import create_response
