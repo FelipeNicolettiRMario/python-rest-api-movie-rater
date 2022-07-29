@@ -4,12 +4,15 @@ from typing import Any, List
 import uuid
 from models.cast import Cast
 
-from repositorys.i_base import IBase
+from repositorys.interfaces.i_base import IBase
+from repositorys.interfaces.i_cast import ICastRepository
 from repositorys.base import BaseRepository
 
 from zope.interface import implementer
 
+
 @implementer(IBase)
+@implementer(ICastRepository)
 class CastRepository(BaseRepository):
 
     def __init__(self,session) -> None:

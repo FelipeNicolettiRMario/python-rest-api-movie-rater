@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from zope.interface import implementer
 
 from models.base import Base
-from repositorys.i_base import IBase
+from repositorys.interfaces.i_base import IBase
 
 @implementer(IBase)
 class BaseRepository:

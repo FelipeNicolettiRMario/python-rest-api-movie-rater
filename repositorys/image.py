@@ -2,12 +2,15 @@ import base64
 import os
 from typing import Any
 from models.image import Image
-from repositorys.i_base import IBase
+from repositorys.interfaces.i_base import IBase
+from repositorys.interfaces.i_image import IImageRepository
+
 from repositorys.base import BaseRepository
 
 from zope.interface import implementer
 
 @implementer(IBase)
+@implementer(IImageRepository)
 class ImageRepository(BaseRepository):
 
     def __init__(self,session,*args: Any, **kwargs: Any) -> None:
