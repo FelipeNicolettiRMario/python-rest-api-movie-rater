@@ -45,5 +45,3 @@ class IBase(Interface):
     def get_entity_by_id(self, entity: Base, id) -> Base:
         pass
     
-    def create_repository_with_same_session(self, repository_implementation):
-        pass

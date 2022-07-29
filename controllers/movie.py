@@ -1,4 +1,6 @@
 from repositorys.base import BaseRepository
+from repositorys.image import ImageRepository
+from services.image import ImageService
 from services.movie import MovieService
 from fastapi import APIRouter, Depends, UploadFile, Form
 import json
@@ -15,7 +17,7 @@ async def create_movie(image: UploadFile,
                       params = Form(...),
                       dbSession = Depends(SessionManager().get_session)):
     
-    movie_service = MovieService(BaseRepository(dbSession))
+    movie_service = MovieService(BaseRepository(dbSession),ImageService(ImageRepository(dbSession)))
     movie = MovieInput(**json.loads(params))
     image_content = await image.read()
 
@@ -25,14 +27,14 @@ async def create_movie(image: UploadFile,
 async def get_all_movies(pagination_info: SearchStandardQueryString = Depends(),
                         dbSession = Depends(SessionManager().get_session)):
 
-    movie_service = MovieService(BaseRepository(dbSession))
+    movie_service = MovieService(BaseRepository(dbSession),ImageService(ImageRepository(dbSession)))
     return movie_service.get_all_movies(pagination_info.max_items)
 
 @movie.delete("/movie/{uuid}")
 async def delete_movie(uuid: str,
                      dbSession = Depends(SessionManager().get_session)):
 
-    movie_service = MovieService(BaseRepository(dbSession))
+    movie_service = MovieService(BaseRepository(dbSession),ImageService(ImageRepository(dbSession)))
     return movie_service.delete_movie(uuid)
 
 @movie.put("/movie/{uuid}")
@@ -40,7 +42,7 @@ async def update_movie(uuid: str,
                      new_information: MovieInputUpdate,
                      dbSession = Depends(SessionManager().get_session)):
 
-    movie_service = MovieService(BaseRepository(dbSession))
+    movie_service = MovieService(BaseRepository(dbSession),ImageService(ImageRepository(dbSession)))
     return movie_service.update_movie(uuid,new_information)
 
 @movie.put("/movie/image/{uuid}")
@@ -48,6 +50,6 @@ async def update_movie_image(image: UploadFile,
                             uuid:str,
                             dbSession = Depends(SessionManager().get_session)):
 
-    movie_service = MovieService(BaseRepository(dbSession))
+    movie_service = MovieService(BaseRepository(dbSession),ImageService(ImageRepository(dbSession)))
     image_content = await image.read()
     return movie_service.update_profile_picture(uuid,b64encode(image_content).decode("UTF-8"))

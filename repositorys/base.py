@@ -82,8 +82,3 @@ class BaseRepository:
     
     def get_entity_by_id(self, entity: Base, id) -> Base:
         return self._session.get(entity, id)
-
-    def create_repository_with_same_session(self, repository_implementation):
-
-        if IBase.implementedBy(repository_implementation):
-            return repository_implementation(self._session)

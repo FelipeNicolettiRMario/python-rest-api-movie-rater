@@ -23,9 +23,9 @@ from repositorys.image import ImageRepository
 @implementer(IBase)
 class UserService(BaseService):
 
-    def __init__(self, repository) -> None:
+    def __init__(self, repository, image_service) -> None:
         super().__init__(repository)
-        self.image_service = ImageService(self.repository.create_repository_with_same_session(ImageRepository))
+        self.image_service = image_service
     
     def _save_user(self, user_entity: Base,image_settings: Dict[str,str] = None):
 

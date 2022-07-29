@@ -21,9 +21,9 @@ from repositorys.image import ImageRepository
 @implementer(IBase)
 class ParticipantService(BaseService):
 
-    def __init__(self, repository) -> None:
+    def __init__(self, repository, image_service) -> None:
         super().__init__(repository)
-        self.image_service = ImageService(self.repository.create_repository_with_same_session(ImageRepository))
+        self.image_service = image_service
 
     def _save_participant(self,participant_entity: Participant,image_settings: Dict[str,str] = None):
         if image_settings:
