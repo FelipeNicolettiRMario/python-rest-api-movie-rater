@@ -8,7 +8,7 @@ from models.movie import Movie
 from models.participant import Participant
 
 from services.base import BaseService
-from services.interfaces.i_base import IBase
+from services.interfaces.i_base import IBaseService
 from services.interfaces.i_cast import ICastService
 
 from utils.response import create_response
@@ -16,7 +16,7 @@ from utils.response import create_response
 from utils.serializer.cast import CastInput, CastInputUpdate
 
 
-@implementer(IBase)
+@implementer(IBaseService)
 @implementer(ICastService)
 class CastService(BaseService):
 

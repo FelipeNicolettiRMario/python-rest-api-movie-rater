@@ -13,7 +13,7 @@ from models.image import E_IMAGE_TYPE, E_MEDIA_STORAGE_TYPE
 from models.user import User
 
 from services.base import BaseService
-from services.interfaces.i_base import IBase
+from services.interfaces.i_base import IBaseService
 from services.interfaces.i_user import IUserService
 
 from utils.serializer.user import UserInput, UserInputUpdate, UserReturnPayloadSimplified
@@ -22,7 +22,7 @@ from utils.response import create_response
 from repositorys.image import ImageRepository
 
 @implementer(IUserService)
-@implementer(IBase)
+@implementer(IBaseService)
 class UserService(BaseService):
 
     def __init__(self, repository, image_service) -> None:

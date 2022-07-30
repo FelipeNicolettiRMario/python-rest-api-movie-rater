@@ -6,11 +6,11 @@ from zope.interface import implementer
 
 from models.image import Image
 from services.base import BaseService
-from services.interfaces.i_base import IBase
+from services.interfaces.i_base import IBaseService
 from services.interfaces.i_image import IImageService
 
 @implementer(IImageService)
-@implementer(IBase)
+@implementer(IBaseService)
 class ImageService(BaseService):
 
     def __init__(self, repository) -> None:

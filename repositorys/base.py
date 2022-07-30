@@ -4,9 +4,9 @@ from sqlalchemy.orm import Session
 from zope.interface import implementer
 
 from models.base import Base
-from repositorys.interfaces.i_base import IBase
+from repositorys.interfaces.i_base import IBaseRepository
 
-@implementer(IBase)
+@implementer(IBaseRepository)
 class BaseRepository:
 
     def __init__(self, _session) -> None:

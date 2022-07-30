@@ -11,7 +11,7 @@ from models.image import E_IMAGE_TYPE, E_MEDIA_STORAGE_TYPE
 from models.participant import Participant
 
 from services.base import BaseService
-from services.interfaces.i_base import IBase
+from services.interfaces.i_base import IBaseService
 from services.interfaces.i_participant import IParticipantService
 
 from utils.response import create_response
@@ -19,7 +19,7 @@ from utils.serializer.participant import ParticipantInput, ParticipantInputUpdat
 
 
 @implementer(IParticipantService)
-@implementer(IBase)
+@implementer(IBaseService)
 class ParticipantService(BaseService):
 
     def __init__(self, repository, image_service) -> None:

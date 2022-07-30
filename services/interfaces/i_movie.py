@@ -1,4 +1,4 @@
-from zope.interface import Interface
+from zope.interface import Interface, Attribute
 
 class IMovieService(Interface):
-    pass
+    image_service = Attribute("Service to manage movie poster")

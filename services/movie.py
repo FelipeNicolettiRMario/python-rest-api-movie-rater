@@ -10,14 +10,14 @@ from models.image import E_IMAGE_TYPE, E_MEDIA_STORAGE_TYPE
 from models.movie import Movie
 
 from services.base import BaseService
-from services.interfaces.i_base import IBase
+from services.interfaces.i_base import IBaseService
 from services.interfaces.i_movie import IMovieService
 from utils.response import create_response
 
 from utils.serializer.movie import MovieInput, MovieInputUpdate, MovieReturnPayloadSimplified
 
 @implementer(IMovieService)
-@implementer(IBase)
+@implementer(IBaseService)
 class MovieService(BaseService):
 
     def __init__(self, repository,image_service) -> None:

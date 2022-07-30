@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 
 from models.base import Base
 
-class IBase(Interface):
+class IBaseRepository(Interface):
 
     _session:Session = Attribute("Session for database Work")
 
