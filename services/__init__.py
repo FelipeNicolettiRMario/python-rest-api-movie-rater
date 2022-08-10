@@ -4,6 +4,7 @@ from services.image import ImageService
 from services.movie import MovieService
 from services.participant import ParticipantService
 from services.user import UserService
+from services.review import ReviewService
 
 __all__ = [
     "BaseService",
@@ -11,5 +12,6 @@ __all__ = [
     "ImageService",
     "MovieService",
     "ParticipantService",
-    "UserService"
+    "UserService",
+    "ReviewService"
 ]

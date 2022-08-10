@@ -4,6 +4,7 @@ from services.interfaces.i_image import IImageService
 from services.interfaces.i_movie import IMovieService
 from services.interfaces.i_participant import IParticipantService
 from services.interfaces.i_user import IUserService
+from services.interfaces.i_review import IReviewService
 
 __all__ = [
     "IBaseService",
@@ -11,5 +12,6 @@ __all__ = [
     "IImageService",
     "IMovieService",
     "IParticipantService",
-    "IUserService"
+    "IUserService",
+    "IReviewService"
 ]

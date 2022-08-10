@@ -23,6 +23,7 @@ class Factory:
         material.update({IMovieService:MovieService})
         material.update({IParticipantService:ParticipantService})
         material.update({IUserService:UserService})
+        material.update({IReviewService:ReviewService})
 
         return material
 
